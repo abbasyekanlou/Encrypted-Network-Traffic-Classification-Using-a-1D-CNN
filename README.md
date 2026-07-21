@@ -91,82 +91,53 @@ Linear classifier: 32 → 5 classes
 The model is intentionally small so that the complete training process is easy
 to understand.
 
-## Baseline result
+## Classification Performance
 
-The current baseline experiment achieved approximately **76.14% test
-accuracy**.
+The trained 1D CNN achieved an overall test accuracy of **86.2%** on **98,535 encrypted network flows**.
 
-Approximate recall by class:
+| Application | Precision | Recall | F1-score | Test flows |
+|---|---:|---:|---:|---:|
+| AppNexus | 92.9% | 91.6% | 92.2% | 18,481 |
+| DNS over HTTPS | 95.2% | 87.6% | 91.2% | 17,083 |
+| Snapchat | 76.7% | 71.6% | 74.0% | 15,954 |
+| Spotify | 77.8% | 73.3% | 75.5% | 11,126 |
+| TikTok | 85.3% | 93.2% | 89.1% | 35,891 |
 
-| Class | Recall |
-|---|---:|
-| AppNexus | 87.45% |
-| DNS over HTTPS | 82.63% |
-| Snapchat | 67.22% |
-| Spotify | 27.61% |
-| TikTok | 86.23% |
+### Overall Metrics
 
-Spotify is the weakest class. Many Spotify flows were predicted as Snapchat,
-which suggests that their first-30-packet patterns overlap under this simple
-feature set and architecture.
+| Metric | Precision | Recall | F1-score |
+|---|---:|---:|---:|
+| Macro average | 85.6% | 83.5% | 84.4% |
+| Weighted average | 86.2% | 86.2% | 86.1% |
 
-## Current confusion matrix
+### Result Analysis
 
-![Test confusion matrix](results/confusion_matrix.png)
+The model performs especially well on **AppNexus**, **DNS over HTTPS**, and **TikTok**, with F1-scores above 89%.
 
-## Installation
+TikTok achieved the highest recall at **93.2%**, meaning the model successfully identified most TikTok flows. DNS over HTTPS achieved the highest precision at **95.2%**, indicating that its predictions were highly reliable.
 
-CESNET DataZoo 0.2.0 requires Python 3.10 or newer. Create a virtual
-environment and install the requirements.
+Snapchat and Spotify remain the most challenging classes. Their lower recall values suggest that some of their encrypted packet-size, direction, and timing patterns overlap with those of other multimedia applications.
 
-### Windows
+Compared with the initial baseline, Spotify recognition improved substantially, reaching:
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
+- **77.8% precision**
+- **73.3% recall**
+- **75.5% F1-score**
 
-### Linux or macOS
+These results show that a relatively small 1D CNN can learn useful application-specific patterns from the first 30 packets of encrypted network flows without inspecting packet payloads.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+## Results
 
-## Run the project
+### Training history
 
-```bash
-python simple_real_cnn.py
-```
+![Accuracy](results/training_validation_accuracy.png)
 
-The first run may take longer because dataset files must be downloaded and
-prepared.
+![Loss](results/training_validation_loss.png)
 
-The script will:
+### Normalized confusion matrix
 
-1. load real encrypted traffic;
-2. select five application classes;
-3. train a small 1D CNN;
-4. print the test accuracy and classification report;
-5. save the model locally; and
-6. save plots in `results/`.
+![Confusion matrix](results/confusion_matrix_normalized.png)
 
-## Generated result files
-
-After running the code, the `results/` folder contains:
-
-- `example_inter_packet_time.png`;
-- `example_packet_direction.png`;
-- `example_packet_size.png`;
-- `training_loss.png`;
-- `accuracy_curve.png`;
-- `confusion_matrix.png`; and
-- `normalized_confusion_matrix.png`.
-
-The model file `traffic_cnn.pt` is excluded from Git because trained models can
-be large and can be regenerated from the code.
 
 ## Limitations
 
